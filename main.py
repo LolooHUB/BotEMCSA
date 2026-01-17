@@ -6,27 +6,27 @@ class MetropolBot(commands.Bot):
     def __init__(self):
         intents = discord.Intents.all()
         super().__init__(command_prefix="!", intents=intents, help_command=None)
-        # ID de tu servidor Metropol
+        # Objeto del servidor Metropol
         self.GUILD_ID = discord.Object(id=1390152252143964260)
 
     async def setup_hook(self):
-        # 1. Carga de extensiones
+        # Intentar cargar extensiones
         for ext in ['Comandos.moderacion', 'Comandos.servicios']:
             try:
                 await self.load_extension(ext)
                 print(f"✅ {ext} cargado.")
             except Exception as e:
-                print(f"❌ Error cargando {ext}: {e}")
+                print(f"❌ No se pudo cargar {ext}: {e}")
 
     async def on_ready(self):
-        print(f"--- 🤖 {self.user.name} ONLINE ---")
-        # 2. Sincronización automática al encender
+        print(f"--- 🤖 ONLINE: {self.user.name} ---")
+        # Sincronización automática
         try:
             self.tree.copy_global_to(guild=self.GUILD_ID)
             await self.tree.sync(guild=self.GUILD_ID)
-            print("🚀 COMANDOS / SINCRONIZADOS EXITOSAMENTE")
+            print("🚀 ÉXITO: Comandos sincronizados.")
         except discord.errors.Forbidden:
-            print("🛑 ERROR 403: Seguís sin el permiso de comandos. Usá el link que te pasé.")
+            print("❌ ERROR 403: Todavía no has entrado al link para autorizar 'applications.commands'.")
 
 bot = MetropolBot()
 
@@ -34,29 +34,25 @@ bot = MetropolBot()
 async def on_message(message):
     if message.author.bot: return
 
-    # Comando de texto para probar si el bot "ve" el chat
+    # Si pones !test y responde, el bot está bien configurado
     if message.content.lower() == "!test":
-        await message.reply("✅ El bot te lee. Si no ves el '/' es por el permiso de comandos.")
+        await message.reply("✅ El bot está vivo. Si no ves los '/', usá el link de arriba.")
 
-    # Comando de emergencia para forzar carga
+    # Sincronización manual solo si eres Admin
     if message.content.lower() == "!fuerza":
         if message.author.guild_permissions.administrator:
             try:
                 await bot.tree.sync(guild=discord.Object(id=1390152252143964260))
-                await message.channel.send("⚡ Sincronización completada. Reiniciá Discord (Ctrl+R).")
+                await message.channel.send("⚡ Sincronización manual enviada. Reiniciá Discord con Ctrl+R.")
             except Exception as e:
-                await message.channel.send(f"❌ Error: {e}")
+                await message.channel.send(f"⚠️ Error: {e}")
 
     await bot.process_commands(message)
 
-# Comandos clásicos que pediste
+# Comandos de prefijo (Siempre funcionan)
 @bot.command()
 async def ayuda(ctx):
-    await ctx.send("📖 **Ayuda Metropol:**\nUsa `/auxilio` para mecánica o `!formularios`.")
-
-@bot.command()
-async def formularios(ctx):
-    await ctx.send("📋 Encontrá los formularios en <#1390152260578967558>")
+    await ctx.send("📖 **Metropol:**\n`/auxilio` - Pedir mecánica.\n`!formularios` - Enlaces.")
 
 if __name__ == "__main__":
     bot.run(os.getenv('DISCORD_TOKEN'))
