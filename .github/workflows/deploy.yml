@@ -1,6 +1,9 @@
 name: Despliegue Bot Metropol
+
 on:
-  workflow_dispatch: # Lo inicias manualmente desde la pestaña Actions
+  workflow_dispatch:
+  push:
+    branches: [ main ]
 
 jobs:
   run-metropol:
@@ -16,13 +19,13 @@ jobs:
 
       - name: Instalar Dependencias
         run: |
-          pip install discord.py
+          python -m pip install --upgrade pip
+          pip install discord.py firebase-admin python-dotenv
 
-      - name: Sincronizar y Ejecutar Bot
+      - name: Ejecutar Bot
         env:
           DISCORD_TOKEN: ${{ secrets.DISCORD_TOKEN }}
+          FIREBASE_CONFIG: ${{ secrets.FIREBASE_CONFIG }}
+          FIREBASE_DB_URL: ${{ secrets.FIREBASE_DB_URL }}
         run: |
-          # Primero forzamos la sincronización de comandos
-          python deploy.py
-          # Luego iniciamos el bot principal
           python main.py
