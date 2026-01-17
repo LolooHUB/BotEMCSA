@@ -4,45 +4,46 @@ import os
 
 class MetropolBot(commands.Bot):
     def __init__(self):
-        # Los intents permiten que el bot vea los mensajes y miembros
         intents = discord.Intents.all()
         super().__init__(command_prefix="!", intents=intents, help_command=None)
-        # ID de tu servidor Metropol
         self.GUILD_ID = discord.Object(id=1390152252143964260)
 
     async def setup_hook(self):
-        print("--- 🛠️ Iniciando Limpieza y Carga ---")
-        # Cargamos los archivos de la carpeta Comandos
-        for ext in ['Comandos.moderacion', 'Comandos.servicios']:
+        print("--- 🛠️ Buscando archivos en carpeta Comandos ---")
+        # Lista de archivos a cargar (Asegúrate de que se llamen así)
+        extensiones = ['Comandos.moderacion', 'Comandos.servicios']
+        
+        for ext in extensiones:
             try:
                 await self.load_extension(ext)
-                print(f"✅ Extensión cargada: {ext}")
+                print(f"✅ Cargado exitosamente: {ext}")
             except Exception as e:
-                print(f"❌ Error cargando {ext}: {e}")
+                print(f"❌ No se pudo cargar {ext}. Error: {e}")
 
     async def on_ready(self):
         print(f"--- 🤖 BOT ONLINE: {self.user.name} ---")
         try:
-            # Borramos comandos viejos y cargamos los nuevos solo en tu servidor
-            self.tree.clear(guild=self.GUILD_ID)
+            # Sincronizamos los comandos del árbol (tree) con el servidor
             self.tree.copy_global_to(guild=self.GUILD_ID)
             await self.tree.sync(guild=self.GUILD_ID)
-            print("🚀 ÉXITO TOTAL: Comandos sincronizados en Metropol.")
+            print("🚀 ÉXITO: Los comandos '/' fueron enviados al servidor.")
         except Exception as e:
-            print(f"❌ Error crítico en on_ready: {e}")
+            print(f"❌ Error al sincronizar con Discord: {e}")
 
 bot = MetropolBot()
 
-# Evento para verificar que el bot lee el chat
-@bot.event
-async def on_message(message):
-    if message.author.bot: return
+@bot.command()
+async def test(ctx):
+    await ctx.send("✅ ¡Bot escuchando! Si no ves los comandos '/', reiniciá Discord con Ctrl+R.")
 
-    # Si escribís !test y el bot NO responde, es un problema de INTENTS en el panel
-    if message.content.lower() == "!test":
-        await message.reply("👋 ¡Hola! El bot está funcionando. Si no ves los '/', reiniciá Discord (Ctrl+R).")
-
-    await bot.process_commands(message)
+@bot.command()
+async def fuerza(ctx):
+    if ctx.author.guild_permissions.administrator:
+        try:
+            await bot.tree.sync(guild=discord.Object(id=1390152252143964260))
+            await ctx.send("⚡ Sincronización manual completada.")
+        except Exception as e:
+            await ctx.send(f"⚠️ Error: {e}")
 
 if __name__ == "__main__":
     bot.run(os.getenv('DISCORD_TOKEN'))
