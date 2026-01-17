@@ -2,7 +2,6 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 from datetime import datetime
-import firebase_admin
 from firebase_admin import db
 import os
 
@@ -15,7 +14,7 @@ class Servicios(commands.Cog):
         self.rol_auxiliar_id = 1390152252143964268
         self.path_logo = "./Imgs/LogoPFP.png"
         
-        # Referencia a la colección de Auxilios
+        # Referencia a Colección de Auxilios
         self.db_auxilios = db.reference('SolicitudesAuxilio')
 
     @app_commands.command(name="auxilio", description="Solicitud de auxilio mecánico en ruta")
@@ -28,22 +27,22 @@ class Servicios(commands.Cog):
 
         await interaction.response.defer(ephemeral=True)
 
-        # --- GUARDAR EN FIREBASE ---
+        # --- REGISTRO EN FIREBASE ---
         try:
-            timestamp_id = datetime.now().strftime("%Y%m%d_%H%M%S")
-            self.db_auxilios.child(timestamp_id).set({
+            # Crear ID única para el registro
+            registro_id = datetime.now().strftime("%Y%m%d_%H%M%S")
+            self.db_auxilios.child(registro_id).set({
                 "chofer_nom": chofer.name,
                 "chofer_id": chofer.id,
                 "lugar": lugar,
                 "motivo": motivo,
                 "foto_url": foto.url,
                 "solicitado_por": interaction.user.name,
-                "fecha": datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+                "fecha_completa": datetime.now().strftime("%d/%m/%Y %H:%M:%S")
             })
         except Exception as e:
-            print(f"❌ Error al guardar auxilio en Firebase: {e}")
+            print(f"❌ Error al registrar auxilio: {e}")
 
-        # --- ENVÍO DEL EMBED ---
         canal_dest = interaction.guild.get_channel(self.canal_auxilio_embed)
         file = discord.File(self.path_logo, filename="LogoPFP.png")
         
@@ -53,11 +52,11 @@ class Servicios(commands.Cog):
         embed.add_field(name="Lugar", value=lugar, inline=True)
         embed.add_field(name="Motivo", value=motivo, inline=False)
         embed.set_image(url=foto.url)
-        embed.set_footer(text=f"ID Registro: {timestamp_id} | La Nueva Metropol S.A.")
+        embed.set_footer(text=f"Registro ID: {registro_id} | La Nueva Metropol S.A.")
 
         mencion_aux = interaction.guild.get_role(self.rol_auxiliar_id)
         await canal_dest.send(content=mencion_aux.mention if mencion_aux else "@Auxiliares", file=file, embed=embed)
-        await interaction.followup.send("✅ Solicitud enviada y registrada en la base de datos.", ephemeral=True)
+        await interaction.followup.send(f"✅ Solicitud enviada y registrada (ID: {registro_id}).", ephemeral=True)
 
 async def setup(bot):
     await bot.add_cog(Servicios(bot))
