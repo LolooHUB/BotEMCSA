@@ -23,17 +23,7 @@ class MetropolBot(commands.Bot):
         self.GUILD_ID = discord.Object(id=1390152252143964260) 
 
     async def setup_hook(self):
-        print("--- 🧹 Limpiando Comandos (Compatibilidad) ---")
-        try:
-            # En lugar de clear(), sincronizamos un árbol vacío para limpiar globales
-            self.tree.copy_global_to(guild=self.GUILD_ID)
-            await self.tree.sync(guild=None) 
-            print("✅ Cache global marcada para limpieza.")
-        except Exception as e:
-            print(f"⚠️ Nota limpieza: {e}")
-
-        # --- 📥 CARGA DE EXTENSIONES ---
-        print("--- 📥 Cargando archivos de Comandos ---")
+        print("--- 📥 Cargando Extensiones ---")
         for extension in self.inicial_extensions:
             try:
                 await self.load_extension(extension)
@@ -41,9 +31,9 @@ class MetropolBot(commands.Bot):
             except Exception as e:
                 print(f"❌ ERROR en {extension}: {e}")
 
-        # --- 🔄 SINCRONIZACIÓN ÚNICA AL SERVIDOR ---
-        print("--- 🔄 Registrando nuevos comandos en Metropol ---")
+        print("--- 🔄 Sincronizando Comandos en Servidor ---")
         try:
+            # Esto mueve los comandos al servidor para que aparezcan rápido
             self.tree.copy_global_to(guild=self.GUILD_ID)
             comandos = await self.tree.sync(guild=self.GUILD_ID)
             print(f"✨ LISTO: {len(comandos)} comandos de barra registrados.")
@@ -63,6 +53,7 @@ class MetropolBot(commands.Bot):
 
 bot = MetropolBot()
 
+# --- EVENTOS ---
 @bot.event
 async def on_member_join(member):
     canal = bot.get_channel(bot.canal_logs_id)
@@ -74,15 +65,16 @@ async def on_member_join(member):
 async def on_message(message):
     if message.author.bot: return
 
+    # Respuesta a menciones
     if bot.user.mentioned_in(message) and not message.mention_everyone:
         respuestas = ["¿Necesitás ayuda? Usá !ayuda", "¡QUÉ QUERÉEEEEES!"]
         await message.reply(random.choice(respuestas))
 
     contenido = message.content.lower()
     if contenido == "!ayuda":
-        await message.reply("📖 **Metropol:** `/auxilio`, `!formularios`")
+        await message.reply("📖 **Metropol Sistema:**\n`/auxilio` - Pedir mecánica.\n`!formularios` - Enlaces.")
     elif contenido == "!formularios":
-        await message.reply("📋 <#1390152260578967558>")
+        await message.reply("📋 Encontrá los formularios en <#1390152260578967558>")
     
     await bot.process_commands(message)
 
@@ -91,4 +83,4 @@ if __name__ == "__main__":
     if token:
         bot.run(token)
     else:
-        print("❌ Token no encontrado")
+        print("❌ ERROR: Token no encontrado.")
