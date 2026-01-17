@@ -2,43 +2,46 @@ import discord
 from discord.ext import commands
 import os
 import asyncio
+import firebase_admin
+from firebase_admin import credentials, firestore
+import json
 
 async def sincronizar():
-    # Configuramos el bot solo para sincronización
-    intents = discord.Intents.default()
+    # Inicializar Firebase para que no de error al cargar los Cogs
+    if not firebase_admin._apps:
+        fb_config = os.getenv('FIREBASE_CONFIG')
+        if fb_config:
+            cred = credentials.Certificate(json.loads(fb_config.strip()))
+            firebase_admin.initialize_app(cred)
+
+    intents = discord.Intents.all()
     bot = commands.Bot(command_prefix="!", intents=intents)
     
-    # Lista de extensiones a cargar para registrar sus comandos
-    extensions = [
-        'Comandos.moderacion',
-        'Comandos.servicios'
-    ]
+    extensions = ['Comandos.moderacion', 'Comandos.servicios']
     
     async with bot:
-        print("--- Iniciando Proceso de Sincronización ---")
+        print("--- 🗑️ Limpiando comandos antiguos ---")
+        await bot.login(os.getenv('DISCORD_TOKEN'))
         
-        # Cargamos las extensiones
+        # Sincronizar vacío para limpiar la caché de Discord
+        bot.tree.clear(guild=None)
+        await bot.tree.sync()
+        
+        print("--- 📥 Cargando extensiones nuevas ---")
         for ext in extensions:
             try:
                 await bot.load_extension(ext)
-                print(f"✅ Extensión preparada: {ext}")
+                print(f"✅ Cargado: {ext}")
             except Exception as e:
-                print(f"❌ Error al preparar {ext}: {e}")
+                print(f"❌ Error en {ext}: {e}")
         
-        # Nos conectamos brevemente para sincronizar
-        print("Conectando con la API de Discord...")
-        await bot.login(os.getenv('DISCORD_TOKEN'))
+        # Sincronizar los comandos reales
+        print("--- 🚀 Sincronizando comandos de Firestore ---")
+        comandos = await bot.tree.sync()
         
-        # Sincronización global
-        comandos_sincronizados = await bot.tree.sync()
-        
-        print(f"--- Sincronización Exitosa ---")
-        print(f"Se han registrado {len(comandos_sincronizados)} comandos de barra.")
-        print("Ya puedes cerrar este proceso o dejar que termine.")
+        print(f"--- ✅ ÉXITO ---")
+        print(f"Se registraron {len(comandos)} comandos. El bot ya debería reconocer /auxilio.")
         await bot.close()
 
 if __name__ == "__main__":
-    try:
-        asyncio.run(sincronizar())
-    except Exception as e:
-        print(f"❌ ERROR CRÍTICO EN DEPLOY: {e}")
+    asyncio.run(sincronizar())
