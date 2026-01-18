@@ -2,28 +2,55 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 from datetime import datetime
+from firebase_admin import firestore
 
 class DesvioModal(discord.ui.Modal, title='Informe Desvío'):
     lugar = discord.ui.TextInput(label='Lugar', placeholder='Ej: Av. General Paz y Constituyentes')
     descripcion = discord.ui.TextInput(label='Describí lo sucedido', style=discord.TextStyle.paragraph)
 
-    def __init__(self, tipo_alerta):
+    def __init__(self, tipo_alerta, bot_db):
         super().__init__()
         self.tipo_alerta = tipo_alerta
+        self.db = bot_db # Recibimos la DB del bot
 
     async def on_submit(self, interaction: discord.Interaction):
+        fecha_actual = datetime.now().strftime('%d/%m/%Y %H:%M')
+        
+        # --- GUARDAR EN FIREBASE ---
+        if self.db:
+            try:
+                self.db.collection("Desvios").add({
+                    "Informante": interaction.user.name,
+                    "InformanteID": str(interaction.user.id),
+                    "Tipo": self.tipo_alerta,
+                    "Lugar": self.lugar.value,
+                    "Descripcion": self.descripcion.value,
+                    "Fecha": fecha_actual
+                })
+            except Exception as e:
+                print(f"Error al guardar desvío: {e}")
+
+        # --- CREAR EMBED ---
         embed = discord.Embed(title="🚨 Informe Alertas", color=discord.Color.yellow())
         embed.set_author(name="La Nueva Metropol S.A.", icon_url="attachment://LogoPFP.png")
-        embed.add_field(name="Informante", value=interaction.user.mention)
-        embed.add_field(name="Tipo de Alerta", value=self.tipo_alerta)
-        embed.add_field(name="Descripción", value=self.descripcion.value)
-        embed.add_field(name="Lugar", value=self.lugar.value)
-        embed.set_footer(text=f"La Nueva Metropol S.A. | {datetime.now().strftime('%d/%m/%Y %H:%M')}")
+        
+        # Diseño vertical para mejor lectura
+        embed.add_field(name="Informante", value=interaction.user.mention, inline=False)
+        embed.add_field(name="Tipo de Alerta", value=self.tipo_alerta, inline=False)
+        embed.add_field(name="Lugar", value=self.lugar.value, inline=False)
+        embed.add_field(name="Descripción", value=f"```\n{self.descripcion.value}\n```", inline=False)
+        
+        embed.set_footer(text=f"La Nueva Metropol S.A. | {fecha_actual}")
 
+        # Enviar al canal de cortes
         canal_cortes = interaction.guild.get_channel(1392951234796978298)
         file = discord.File("Imgs/LogoPFP.png", filename="LogoPFP.png")
-        await canal_cortes.send(file=file, embed=embed)
-        await interaction.response.send_message("Informe enviado correctamente.", ephemeral=True)
+        
+        if canal_cortes:
+            await canal_cortes.send(file=file, embed=embed)
+            await interaction.response.send_message("✅ Informe enviado y guardado correctamente.", ephemeral=True)
+        else:
+            await interaction.response.send_message(file=file, embed=embed, ephemeral=True)
 
 class Desvio(commands.Cog):
     def __init__(self, bot):
@@ -38,9 +65,12 @@ class Desvio(commands.Cog):
     ])
     async def desvio(self, interaction: discord.Interaction, tipo: app_commands.Choice[str]):
         if not any(r.id in self.roles_permitidos for r in interaction.user.roles):
-            return await interaction.response.send_message("No tienes permiso para reportar alertas.", ephemeral=True)
+            return await interaction.response.send_message("❌ No tienes permiso para reportar alertas.", ephemeral=True)
         
-        await interaction.response.send_modal(DesvioModal(tipo.value))
+        # Pasamos el tipo y la DB al Modal
+        # Usamos firestore.client() directo como pediste mantener
+        db_actual = firestore.client()
+        await interaction.response.send_modal(DesvioModal(tipo.value, db_actual))
 
 async def setup(bot):
     await bot.add_cog(Desvio(bot))
