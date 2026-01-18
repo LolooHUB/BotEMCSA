@@ -128,7 +128,7 @@ class Auxiliar(commands.Cog):
             # Enviamos el objeto 'chofer' completo para poder hacerle el ping luego
             view = AuxilioButtons(chofer, lugar, motivo)
             await canal_destino.send(content="<@&1390152252143964268> ⚠️ **NUEVA SOLICITUD**", embed=embed, view=view)
-            await interaction.response.send_message("✅ Tu solicitud ha sido enviada a los mecánicos.", ephemeral=True)
+            await interaction.response.send_message("✅ Tu solicitud ha sido enviada a los mecánicos.", ephemeral=False)
 
 async def setup(bot):
     await bot.add_cog(Auxiliar(bot))
