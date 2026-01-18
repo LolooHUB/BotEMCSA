@@ -50,8 +50,7 @@ class Warns(commands.Cog):
         
         # Para usar attachment en el author, el filename debe coincidir
         embed.set_author(name="La Nueva Metropol S.A.", icon_url="attachment://LogoPFP.png")
-        embed.set_thumbnail(url=usuario.display_avatar.url)
-
+        
         # Campos en VERTICAL
         embed.add_field(name="Usuario", value=usuario.mention, inline=False)
         embed.add_field(name="Moderador", value=interaction.user.mention, inline=False)
