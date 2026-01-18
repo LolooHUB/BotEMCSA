@@ -1,42 +1,63 @@
 import discord
 from discord.ext import commands
+from discord import app_commands
 import os
+import asyncio
 
 # --- CONFIGURACIÓN ---
 intents = discord.Intents.all()
 bot = commands.Bot(command_prefix="!", intents=intents)
 
+# --- CARGA DE EXTENSIONES ---
+async def load_extensions():
+    # Esto busca en tus carpetas 'Comandos' e 'Interacciones'
+    for folder in ['Comandos', 'Interacciones']:
+        if os.path.exists(folder):
+            for filename in os.listdir(folder):
+                if filename.endswith('.py'):
+                    try:
+                        await bot.load_extension(f'{folder}.{filename[:-3]}')
+                        print(f'✅ Extension cargada: {filename}')
+                    except Exception as e:
+                        print(f'❌ Error cargando {filename}: {e}')
+
+# --- EVENTO ON_READY (STATUS Y SYNC) ---
 @bot.event
 async def on_ready():
-    # Sincronizamos al prender para que aparezcan los /
+    # Establecer Status
+    activity = discord.Activity(type=discord.ActivityType.watching, name="La Nueva Metropol S.A.")
+    await bot.change_presence(status=discord.Status.online, activity=activity)
+    
+    print(f'--- BOT CONECTADO: {bot.user} ---')
+    
+    # Sincronización automática de comandos /
     try:
-        await bot.tree.sync()
-        print(f"✅ Bot conectado como {bot.user}")
-        print("🌐 Comandos de barra sincronizados.")
+        synced = await bot.tree.sync()
+        print(f"🌐 Se han sincronizado {len(synced)} comandos de barra.")
     except Exception as e:
         print(f"❌ Error al sincronizar: {e}")
 
-# Comando de emergencia por chat
+# --- COMANDO SYNC MANUAL ---
 @bot.command()
 @commands.has_permissions(administrator=True)
 async def sync(ctx):
-    await bot.tree.sync()
-    await ctx.send("🔄 Sincronización manual solicitada.")
-
-# Función para cargar el auxiliar.py específicamente
-async def load_extensions():
+    """Escribe !sync si los comandos / no aparecen"""
+    await ctx.send("🔄 Sincronizando comandos...")
     try:
-        # Cargamos el archivo directamente
-        await bot.load_extension('Comandos.auxiliar')
-        print("✅ Extensión Auxiliar cargada.")
+        await bot.tree.sync()
+        await ctx.send("✅ Comandos de barra actualizados. Si no los ves, reinicia Discord (Ctrl+R).")
     except Exception as e:
-        print(f"❌ No se pudo cargar auxiliar.py: {e}")
+        await ctx.send(f"❌ Error: {e}")
 
-async def setup():
+# --- LANZAMIENTO ---
+async def main():
     async with bot:
         await load_extensions()
-        await bot.start(os.getenv("DISCORD_TOKEN"))
+        token = os.getenv("DISCORD_TOKEN")
+        await bot.start(token)
 
-import asyncio
 if __name__ == "__main__":
-    asyncio.run(setup())
+    try:
+        asyncio.run(main())
+    except KeyboardInterrupt:
+        pass
