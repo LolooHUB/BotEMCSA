@@ -122,6 +122,7 @@ class Auxiliar(commands.Cog):
         embed.add_field(name="🛠️ Motivo", value=f"```\n{motivo}\n```", inline=False)
         if foto: embed.set_image(url=foto.url)
         embed.set_footer(text=f"Solicitado por: {interaction.user.name}")
+        embed.set_image(url="attachment://Banner.png")
 
         canal_destino = interaction.guild.get_channel(CANAL_MECANICA_ID)
         if canal_destino:
