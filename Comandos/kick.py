@@ -19,14 +19,12 @@ class Kick(commands.Cog):
         if not any(role.id in self.admin_roles for role in interaction.user.roles):
             return await interaction.response.send_message("❌ Permisos insuficientes.", ephemeral=True)
 
-        # 1. Configurar Hora Argentina
         fecha_ahora = datetime.now(tz_arg)
         fecha_str = fecha_ahora.strftime('%d/%m/%Y %H:%M')
-
         db = firestore.client()
 
         try:
-            # 2. Guardar en Firebase con hora argentina
+            # 1. Guardar en Firebase
             db.collection("Kicks").add({
                 "UsuarioID": str(usuario.id),
                 "Moderador": interaction.user.name,
@@ -34,29 +32,38 @@ class Kick(commands.Cog):
                 "Fecha": fecha_str 
             })
 
-            # 3. Expulsar al usuario
+            # 2. Expulsar al usuario
             await usuario.kick(reason=motivo)
 
-            # --- DISEÑO DEL EMBED ---
+            # --- EMBED BASE ---
             embed = discord.Embed(title="⛔ Usuario Kickeado", color=discord.Color.orange(), timestamp=fecha_ahora)
             embed.set_author(name="La Nueva Metropol S.A.", icon_url="attachment://LogoPFP.png")
-            
             embed.add_field(name="Usuario", value=usuario.mention, inline=False)
-            embed.add_field(name="Motivo", value=motivo, inline=False)
-            embed.add_field(name="Evidencia", value=evidencia.url if evidencia else "No proporcionada", inline=False)
+            embed.add_field(name="Motivo", value=f"```\n{motivo}\n```", inline=False)
             embed.add_field(name="Administrador", value=interaction.user.mention, inline=False)
-            
-            # Footer con hora argentina
             embed.set_footer(text=f"La Nueva Metropol S.A. | {fecha_str}")
-            embed.set_image(url="attachment://Banner.png")
 
-            # 4. Enviar a Logs
-            channel = interaction.guild.get_channel(1397738825609904242)
-            file = discord.File("Imgs/LogoPFP.png", filename="LogoPFP.png")
-            
-            if channel:
-                await channel.send(file=file, embed=embed)
-            
+            # --- ENVÍO A CANAL PÚBLICO (CON BANNER) ---
+            canal_sanciones = interaction.guild.get_channel(1397738825609904242)
+            if canal_sanciones:
+                embed_pub = embed.copy()
+                embed_pub.set_image(url="attachment://Banner.png")
+                # Archivos para el canal público
+                f1 = discord.File("Imgs/LogoPFP.png", filename="LogoPFP.png")
+                f2 = discord.File("Imgs/Banner.png", filename="Banner.png")
+                await canal_sanciones.send(files=[f1, f2], embed=embed_pub)
+
+            # --- ENVÍO A LOGS (CON EVIDENCIA) ---
+            # Si tenés un canal de logs diferente, poné el ID acá. 
+            # Si usás el mismo, podés omitir este paso o mandarlo al mismo canal con la foto.
+            canal_logs = interaction.guild.get_channel(1397738825609904242) # Usando el mismo ID de tu código
+            if canal_logs and evidencia:
+                embed_log = embed.copy()
+                embed_log.set_image(url=evidencia.url)
+                embed_log.title = "📂 Log de Evidencia - Kick"
+                f3 = discord.File("Imgs/LogoPFP.png", filename="LogoPFP.png")
+                await canal_logs.send(file=f3, embed=embed_log)
+
             await interaction.response.send_message(f"✅ {usuario.name} ha sido expulsado.", ephemeral=True)
             
         except Exception as e:
