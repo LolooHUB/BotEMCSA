@@ -3,6 +3,7 @@ from discord import app_commands
 from discord.ext import commands
 from datetime import datetime, timedelta, timezone
 from firebase_admin import firestore
+import os
 
 class DesvioModal(discord.ui.Modal, title='Informe Desvío'):
     lugar = discord.ui.TextInput(label='Lugar', placeholder='Ej: Av. General Paz y Constituyentes')
@@ -15,7 +16,6 @@ class DesvioModal(discord.ui.Modal, title='Informe Desvío'):
 
     async def on_submit(self, interaction: discord.Interaction):
         # --- CONFIGURAR HORA ARGENTINA ---
-        # Argentina es UTC-3
         tz_arg = timezone(timedelta(hours=-3))
         fecha_arg = datetime.now(tz_arg).strftime('%d/%m/%Y %H:%M')
         
@@ -36,6 +36,8 @@ class DesvioModal(discord.ui.Modal, title='Informe Desvío'):
         # --- CREAR EMBED ---
         embed = discord.Embed(title="🚨 Informe Alertas", color=discord.Color.yellow())
         embed.set_author(name="La Nueva Metropol S.A.", icon_url="attachment://LogoPFP.png")
+        
+        # Agregamos el Banner al Embed
         embed.set_image(url="attachment://Banner.png")
         
         embed.add_field(name="Informante", value=interaction.user.mention, inline=False)
@@ -43,17 +45,20 @@ class DesvioModal(discord.ui.Modal, title='Informe Desvío'):
         embed.add_field(name="Lugar", value=self.lugar.value, inline=False)
         embed.add_field(name="Descripción", value=f"```\n{self.descripcion.value}\n```", inline=False)
         
-        # El footer también con la hora de acá
         embed.set_footer(text=f"La Nueva Metropol S.A. | {fecha_arg} (ARG)")
 
+        # --- PREPARACIÓN DE ARCHIVOS ---
+        file1 = discord.File("Imgs/LogoPFP.png", filename="LogoPFP.png")
+        file2 = discord.File("Imgs/Banner.png", filename="Banner.png")
+        
         canal_cortes = interaction.guild.get_channel(1392951234796978298)
-        file = discord.File("Imgs/LogoPFP.png", filename="LogoPFP.png")
         
         if canal_cortes:
-            await canal_cortes.send(file=file, embed=embed)
+            # Enviamos ambos archivos en una lista
+            await canal_cortes.send(files=[file1, file2], embed=embed)
             await interaction.response.send_message("✅ Informe enviado y guardado correctamente.", ephemeral=True)
         else:
-            await interaction.response.send_message(file=file, embed=embed, ephemeral=True)
+            await interaction.response.send_message(files=[file1, file2], embed=embed, ephemeral=True)
 
 class Desvio(commands.Cog):
     def __init__(self, bot):
@@ -68,7 +73,7 @@ class Desvio(commands.Cog):
     ])
     async def desvio(self, interaction: discord.Interaction, tipo: app_commands.Choice[str]):
         if not any(r.id in self.roles_permitidos for r in interaction.user.roles):
-            return await interaction.response.send_message("❌ No tienes permiso para reportar alertas.", ephemeral=True)
+            return await interaction.response.send_message("❌ No tienes permiso.", ephemeral=True)
         
         db_actual = firestore.client()
         await interaction.response.send_modal(DesvioModal(tipo.value, db_actual))
