@@ -48,6 +48,7 @@ class Kick(commands.Cog):
             
             # Footer con hora argentina
             embed.set_footer(text=f"La Nueva Metropol S.A. | {fecha_str}")
+            embed.set_image(url="attachment://Banner.png")
 
             # 4. Enviar a Logs
             channel = interaction.guild.get_channel(1397738825609904242)
