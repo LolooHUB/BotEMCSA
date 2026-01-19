@@ -36,6 +36,7 @@ class DesvioModal(discord.ui.Modal, title='Informe Desvío'):
         # --- CREAR EMBED ---
         embed = discord.Embed(title="🚨 Informe Alertas", color=discord.Color.yellow())
         embed.set_author(name="La Nueva Metropol S.A.", icon_url="attachment://LogoPFP.png")
+        embed.set_image(url="attachment://Banner.png")
         
         embed.add_field(name="Informante", value=interaction.user.mention, inline=False)
         embed.add_field(name="Tipo de Alerta", value=self.tipo_alerta, inline=False)
