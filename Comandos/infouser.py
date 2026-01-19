@@ -32,6 +32,7 @@ class InfoUser(commands.Cog):
         embed.add_field(name="Kickeado alguna vez?", value=kicked, inline=True)
         embed.add_field(name="Tiempo en Servidor", value=f"{dias} días", inline=False)
         embed.set_footer(text=f"La Nueva Metropol S.A. | {datetime.now().strftime('%d/%m/%Y %H:%M')}")
+        embed.set_image(url="attachment://Banner.png")
 
         file = discord.File("Imgs/LogoPFP.png", filename="LogoPFP.png")
         await interaction.response.send_message(file=file, embed=embed)
