@@ -10,7 +10,7 @@ import os
 tz_arg = timezone(timedelta(hours=-3))
 
 class LicenciaModal(discord.ui.Modal, title='Registro de Licencia Habilitante'):
-    nombre_juego = discord.ui.TextInput(label='Nombre en el Juego (Nick)', placeholder='Ej: Chofer_Metropol22', min_length=3)
+    nombre_juego = discord.ui.TextInput(label='Nombre en el Juego (Nick)', placeholder='Ej: Milanesa', min_length=3)
     id_jugador = discord.ui.TextInput(label='ID de Jugador (Juego)', placeholder='Ej: 987654', min_length=1)
     exp_previa = discord.ui.TextInput(label='Empresa Anterior (Opcional)', placeholder='Ej: Línea 60 / Ninguna', required=False)
 
@@ -59,8 +59,8 @@ class Licencia(commands.Cog):
         # Si TIENE licencia, mostrarla
         data = doc.to_dict()
         
-        embed = discord.Embed(title="🪪 LICENCIA DE CONDUCIR PROFESIONAL", color=discord.Color.green(), timestamp=datetime.now(tz_arg))
-        embed.set_author(name="La Nueva Metropol S.A. | CNRT Virtual", icon_url="attachment://LogoPFP.png")
+        embed = discord.Embed(title="🪪 LICENCIA DE MANEJO", color=discord.Color.green(), timestamp=datetime.now(tz_arg))
+        embed.set_author(name="Expreso Martín Coronado S.A.", icon_url="attachment://LogoPFP.png")
         embed.set_thumbnail(url=interaction.user.display_avatar.url)
         embed.set_image(url="attachment://Banner.png")
 
@@ -70,7 +70,7 @@ class Licencia(commands.Cog):
         embed.add_field(name="🔢 ID de Jugador", value=f"**{data['ID_Juego']}**", inline=False)
         embed.add_field(name="📅 Fecha de Emisión", value=data['FechaEmision'], inline=False)
 
-        embed.set_footer(text="Documento oficial de La Nueva Metropol S.A.")
+        embed.set_footer(text="Documento oficial de Expreso Martín Coronado S.A.")
 
         f1 = discord.File("Imgs/LogoPFP.png", filename="LogoPFP.png")
         f2 = discord.File("Imgs/Banner.png", filename="Banner.png")

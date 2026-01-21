@@ -116,7 +116,7 @@ class Auxiliar(commands.Cog):
 
         ahora_arg = datetime.now(tz_arg)
         embed = discord.Embed(title="📛 SOLICITUD DE ASISTENCIA", color=discord.Color.orange(), timestamp=ahora_arg)
-        embed.set_author(name="La Nueva Metropol S.A.", icon_url=interaction.guild.icon.url if interaction.guild.icon else None)
+        embed.set_author(name="Expreso Martín Coronado S.A.", icon_url=interaction.guild.icon.url if interaction.guild.icon else None)
         embed.add_field(name="👤 Chofer", value=chofer.mention, inline=True)
         embed.add_field(name="📍 Lugar", value=lugar, inline=True)
         embed.add_field(name="🛠️ Motivo", value=f"```\n{motivo}\n```", inline=False)

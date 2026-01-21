@@ -1,15 +1,14 @@
-name: Bot Metropol Deployment
+name: Expreso Martín Coronado S.A.
 
 on:
   push:
     branches: [ main ]
   schedule:
-    - cron: '0 */6 * * *' # Se ejecuta cada 6 horas automáticamente
-  workflow_dispatch: # Permite ejecución manual desde GitHub
+    - cron: '0 */6 * * *'
+  workflow_dispatch:
 
-# Evita que corran dos procesos del bot al mismo tiempo
 concurrency:
-  group: metropol-bot-running
+  group: EMCSA-bot-running
   cancel-in-progress: true
 
 jobs:

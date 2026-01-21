@@ -11,6 +11,8 @@ class LegajoModal(discord.ui.Modal, title='Registro de Legajo Laboral'):
     interno = discord.ui.TextInput(label='Número de Interno', placeholder='Ej: 4502')
     lineas = discord.ui.TextInput(label='Línea(s) Asignada(s)', placeholder='Ej: 194, 195')
     notas = discord.ui.TextInput(label='Observaciones', style=discord.TextStyle.paragraph, required=False)
+    legajo = discord.ui.TextInput(label='Número de Legajo', placeholder='Ej: 1003')
+    
 
     def __init__(self, usuario, db):
         super().__init__()
@@ -33,6 +35,7 @@ class LegajoModal(discord.ui.Modal, title='Registro de Legajo Laboral'):
             "Notas": self.notas.value or "Sin observaciones.",
             "DiasEnEmpresa": antiguedad.days,
             "LicenciaID": lic_id,
+            "NumLegajo": self.legajo.value,
             "UltimaActualizacion": datetime.now(tz_arg).strftime('%d/%m/%Y %H:%M')
         }
         
@@ -42,7 +45,7 @@ class LegajoModal(discord.ui.Modal, title='Registro de Legajo Laboral'):
 class Legajos(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.admin_roles = [1390152252169125992, 1445570965852520650, 1397020690435149824]
+        self.admin_roles = [1448477246221189234]
 
     @app_commands.command(name="editar-legajo", description="Admin: Crear/Editar legajo de un usuario")
     async def editar_legajo(self, interaction: discord.Interaction, usuario: discord.Member):
@@ -63,13 +66,14 @@ class Legajos(commands.Cog):
         data = doc.to_dict()
         
         embed = discord.Embed(title=f"📋 Legajo - {usuario.name}", color=discord.Color.blue(), timestamp=datetime.now(tz_arg))
-        embed.set_author(name="La Nueva Metropol S.A. | RR.HH.", icon_url="attachment://LogoPFP.png")
+        embed.set_author(name="Expreso Martín Coronado S.A. | RR.HH.", icon_url="attachment://LogoPFP.png")
         embed.set_thumbnail(url=usuario.display_avatar.url)
         embed.set_image(url="attachment://Banner.png")
 
         embed.add_field(name="👤 Chofer", value=usuario.mention, inline=False)
         embed.add_field(name="🚍 Interno", value=f"**{data['Interno']}**", inline=False)
         embed.add_field(name="🛤️ Líneas", value=f"**{data['Lineas']}**", inline=False)
+        embed.add_field(name="🪪 N° Legajo", value=f"**{data['NumLegajo']}**", inline=False)
         embed.add_field(name="🪪 ID Licencia", value=f"**{data.get('LicenciaID', 'No tramitada')}**", inline=False)
         embed.add_field(name="📅 Antigüedad", value=f"**{data['DiasEnEmpresa']} días**", inline=False)
         embed.add_field(name="📝 Notas", value=f"```\n{data['Notas']}\n```", inline=False)

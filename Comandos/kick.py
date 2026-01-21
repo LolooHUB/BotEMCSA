@@ -37,11 +37,11 @@ class Kick(commands.Cog):
 
             # --- EMBED BASE ---
             embed = discord.Embed(title="⛔ Usuario Kickeado", color=discord.Color.orange(), timestamp=fecha_ahora)
-            embed.set_author(name="La Nueva Metropol S.A.", icon_url="attachment://LogoPFP.png")
+            embed.set_author(name="Expreso Martín Coronado S.A.", icon_url="attachment://LogoPFP.png")
             embed.add_field(name="Usuario", value=usuario.mention, inline=False)
             embed.add_field(name="Motivo", value=f"```\n{motivo}\n```", inline=False)
             embed.add_field(name="Administrador", value=interaction.user.mention, inline=False)
-            embed.set_footer(text=f"La Nueva Metropol S.A. | {fecha_str}")
+            embed.set_footer(text=f"Expreso Martín Coronado S.A. | {fecha_str}")
 
             # --- ENVÍO A CANAL PÚBLICO (CON BANNER) ---
             canal_sanciones = interaction.guild.get_channel(1397738825609904242)

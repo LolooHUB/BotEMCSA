@@ -11,7 +11,7 @@ tz_arg = timezone(timedelta(hours=-3))
 class InfoUser(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.admin_roles = [1390152252169125992, 1445570965852520650, 1397020690435149824]
+        self.admin_roles = [1448477246221189234]
 
     @app_commands.command(name="info-user", description="Ver historial de un usuario")
     async def info_user(self, interaction: discord.Interaction, usuario: discord.Member):
@@ -36,7 +36,7 @@ class InfoUser(commands.Cog):
 
         # --- CREAR EMBED ---
         embed = discord.Embed(title="📊 Historial de Usuario", color=discord.Color.blue(), timestamp=fecha_arg)
-        embed.set_author(name="La Nueva Metropol S.A.", icon_url="attachment://LogoPFP.png")
+        embed.set_author(name="Expreso Martín Coronado S.A.", icon_url="attachment://LogoPFP.png")
         embed.set_thumbnail(url=usuario.display_avatar.url)
         
         embed.add_field(name="👤 Usuario", value=usuario.mention, inline=False)

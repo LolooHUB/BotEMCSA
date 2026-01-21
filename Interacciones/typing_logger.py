@@ -5,7 +5,7 @@ from datetime import datetime
 class TypingLogger(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.log_channel_id = 1390152261937922070
+        self.log_channel_id = 1456385261239013437
 
     @commands.Cog.listener()
     async def on_typing(self, channel, user, when):

@@ -38,12 +38,12 @@ class Ban(commands.Cog):
 
             # --- EMBED PARA CANAL PÚBLICO (SANCIONES) ---
             embed_pub = discord.Embed(title="⛔ Usuario Baneado", color=discord.Color.red(), timestamp=fecha_ahora)
-            embed_pub.set_author(name="La Nueva Metropol S.A.", icon_url="attachment://LogoPFP.png")
+            embed_pub.set_author(name="Expreso Martín Coronado S.A.", icon_url="attachment://LogoPFP.png")
             embed_pub.set_image(url="attachment://Banner.png") # Banner para el público
             embed_pub.add_field(name="Usuario", value=usuario.mention, inline=False)
             embed_pub.add_field(name="Motivo", value=f"```\n{motivo}\n```", inline=False)
             embed_pub.add_field(name="Duración", value=duracion, inline=False)
-            embed_pub.set_footer(text=f"La Nueva Metropol S.A. | {fecha_str}")
+            embed_pub.set_footer(text=f"Expreso Martín Coronado S.A. | {fecha_str}")
 
             # --- EMBED PARA LOGS (CON EVIDENCIA) ---
             embed_log = embed_pub.copy()

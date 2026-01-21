@@ -41,7 +41,7 @@ async def load_extensions():
 @bot.event
 async def on_ready():
     # Establecer Status
-    activity = discord.Activity(type=discord.ActivityType.watching, name="La Nueva Metropol S.A.")
+    activity = discord.Activity(type=discord.ActivityType.watching, name="Expreso Martín Coronado S.A.")
     await bot.change_presence(status=discord.Status.online, activity=activity)
     
     # Sincronización inicial rápida
