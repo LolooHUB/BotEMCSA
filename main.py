@@ -6,26 +6,24 @@ import firebase_admin
 from firebase_admin import credentials, firestore
 import asyncio
 
-# 1. CONFIGURACIÓN DEL BOT (Mover aquí arriba)
+# --- CONFIGURACIÓN DEL BOT ---
 intents = discord.Intents.all()
 bot = commands.Bot(command_prefix="!", intents=intents)
 
-# 2. CONFIGURACIÓN DE FIREBASE
+# --- FIREBASE (Desde el Secret como recordamos) ---
 firebase_config = os.getenv("FIREBASE_CONFIG")
-db = None
-
+bot.db = None
 if firebase_config:
     try:
         cred_dict = json.loads(firebase_config)
         cred = credentials.Certificate(cred_dict)
         firebase_admin.initialize_app(cred)
-        db = firestore.client()
-        bot.db = db # Ahora sí podemos asignar db al bot
-        print("✅ Firebase Conectado correctamente.")
+        bot.db = firestore.client()
+        print("✅ Firebase conectado.")
     except Exception as e:
-        print(f"❌ Error al conectar Firebase: {e}")
+        print(f"❌ Error Firebase: {e}")
 
-# 3. CARGA DE EXTENSIONES
+# --- CARGA DE EXTENSIONES ---
 async def load_extensions():
     for folder in ['Comandos', 'Interacciones']:
         if os.path.exists(folder):
@@ -33,34 +31,37 @@ async def load_extensions():
                 if filename.endswith('.py'):
                     try:
                         await bot.load_extension(f'{folder}.{filename[:-3]}')
-                        print(f'✅ Extensión cargada: {folder}/{filename}')
+                        print(f'✅ Cargado: {filename}')
                     except Exception as e:
                         print(f'❌ Error cargando {filename}: {e}')
 
-# 4. EVENTOS (Ahora 'bot' ya existe)
 @bot.event
 async def on_ready():
-    activity = discord.Activity(type=discord.ActivityType.watching, name="Expreso Martín Coronado S.A.")
-    await bot.change_presence(status=discord.Status.online, activity=activity)
-    
-    try:
-        await bot.tree.sync()
-        print(f"🚀 Bot Online: {bot.user} | Comandos Sincronizados")
-    except Exception as e:
-        print(f"❌ Error en Sync inicial: {e}")
+    print(f"🚀 Bot iniciado como: {bot.user}")
+    print("👉 Escribí !setup en tu servidor para activar los comandos.")
 
-# 5. ARRANQUE
+# --- COMANDO DE EMERGENCIA ---
+@bot.command(name="setup")
+async def setup_servidor(ctx):
+    # ID del rol Staff que me pasaste
+    staff_role_id = 1448477246221189234
+    if not any(role.id == staff_role_id for role in ctx.author.roles):
+        return await ctx.send("❌ No tenés el rol de Staff.")
+
+    await ctx.send("⚙️ **Sincronizando comandos en este servidor...**")
+    try:
+        # Esto trae todos los comandos de las carpetas y los activa en tu server
+        bot.tree.copy_global_to(guild=ctx.guild)
+        synced = await bot.tree.sync(guild=ctx.guild)
+        await ctx.send(f"✅ ¡LISTO! Se activaron {len(synced)} comandos. Si no los ves, reiniciá el Discord (Ctrl+R).")
+    except Exception as e:
+        await ctx.send(f"❌ Error: {e}")
+
 async def main():
     async with bot:
         await load_extensions()
         token = os.getenv("DISCORD_TOKEN")
-        if token:
-            await bot.start(token)
-        else:
-            print("❌ ERROR: No se encontró el DISCORD_TOKEN.")
+        await bot.start(token)
 
 if __name__ == "__main__":
-    try:
-        asyncio.run(main())
-    except KeyboardInterrupt:
-        pass
+    asyncio.run(main())
